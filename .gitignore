@@ -1,0 +1,15 @@
+# Ignore XAMPP-specific or local config files
+*.log
+*.env
+vendor/
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor settings
+.vscode/
+.idea/
+
+# Ignore OS files
+*.bak
+*.tmp
