@@ -1,25 +1,34 @@
 <?php 
 include 'shared-components/header.php'; 
 include 'dblib/db_exercise.php';
-include 'dblib/db_config.php'; // or 'includes/db_config.php' if you moved it
+include 'dblib/db_config.php';
 
-$sql = "SELECT * FROM exercise";
-$result = $conn->query($sql);
+$exerciseProvider = ExerciseProviderFactory::createProvider("db");
+$result = $exerciseProvider->getExercises();
 
-$exercise = 
+print_r($result,true);
+error_log(print_r($result,true));
 
-if ($result->num_rows > 0) {
-    echo "<h2>Exercise Table</h2><ul>";
-    while($row = $result->fetch_assoc()) {
-        echo "<li>ID: " . $row["id"] . " - Name: " . $row["name"] . "11</li>";
-        // Adjust based on your table fields
+// if ($result->num_rows > 0) {
+//     echo "<h2>Exercise Table</h2><ul>";
+//     while($row = $result->fetch_assoc()) {
+//         echo "<li>ID: " . $row["id"] . " - Name: " . $row["name"] . "11</li>";
+//     }
+//     echo "</ul>";
+//     echo "<div class='row'><div class='col-6'>test</div><div class='col-6'>test 2</div><div>";
+// } else {
+//     echo "No results found.";
+// }
+try {
+    $provider = ExerciseProviderFactory::createProvider("db");
+    $exercises = $provider->getExercises();
+
+    foreach ($exercises as $ex) {
+        echo "Exercise: " . $ex->getname() . "<br>";
     }
-    echo "</ul>";
-    echo "<div class='row'><div class='col-6'>test</div><div class='col-6'>test 2</div><div>";
-} else {
-    echo "No results found.";
+} catch (DBAccessException $e) {
+    error_log($e);
+    echo "Failed to fetch exercises.";
 }
-
-$conn->close();
 include 'shared-components/footer.php'; 
 ?>

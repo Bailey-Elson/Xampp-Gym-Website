@@ -1,5 +1,6 @@
 <?php
-include 'dblib/db_config.php'; 
+require_once 'db_config.php'; 
+require_once 'db_util.php';
 
 class Exercise {
 
@@ -12,8 +13,19 @@ class Exercise {
         $this->exerciseDetails['note'] = '';
     }
 
+    public static function create($params=null){
+        $instance = new self();
+        if(isset($params)){
+            if(isset($params['id'])){$instance->exerciseDetails['id']=$params['id'];}
+            if(isset($params['name'])){$instance->exerciseDetails['name']=$params['name'];}
+            if(isset($params['exercisetypeid'])){$instance->exerciseDetails['exercisetypeid']=$params['exercisetypeid'];}
+            if(isset($params['note'])){$instance->exerciseDetails['note']=$params['note'];}
+        }
+        return $instance;
+    }
+
     function setid($id) {
-        $this->id = $id;
+        $this->exerciseDetails['id'] = $id;
     }
     function getid(){
         return $this->exerciseDetails['id'];
@@ -21,7 +33,7 @@ class Exercise {
 
 
     function setname($name) {
-        $this->name = $name;
+        $this->exerciseDetails['name'] = $name;
     }
     function getname(){
         return $this->exerciseDetails['name'];
@@ -29,7 +41,7 @@ class Exercise {
 
 
     function setexercisetypeid($exercisetypeid) {
-        $this->exercisetypeid = $exercisetypeid;
+        $this->exerciseDetails['exercisetypeid'] = $exercisetypeid;
     }
     function getexercisetypeid(){
         return $this->exerciseDetails['exercisetypeid'];
@@ -37,17 +49,47 @@ class Exercise {
 
 
     function setnote($note) {
-        $this->note = $note;
+        $this->exerciseDetails['note'] = $note;
     }
     function getnote(){
         return $this->exerciseDetails['note'];
     }
 }
-function getExercises() {
-    $mysql = "SELECT * FROM exercise;";
-    $result = $conn->query($sql);
+interface ExerciseProvider {
+    public function getExercises();
+}
+class DBExerciseProvider implements ExerciseProvider {
+    public function getExercises() {
+        $mysql = "SELECT * FROM exercise;";
+        $exercises = $this->readExercises($mysql);
+        error_log(print_r($exercises, true));
 
-    error_log(print_r($result, true));
+        return $exercises;
+    }
+    private function readExercises($mysql) {
+        $exercises = array();
+        $con = DatabaseConnection::getInstance()->getConnection();
 
-    return $result;
+        $results = $con->query($mysql); 
+
+        if ($results === false) {
+            throw new DBAccessException($con->error, $mysql, get_class($this), "Error Reading Exercise Record");
+        }
+
+        while ($row = $results->fetch_assoc()) {
+            $exercise = Exercise::create($row);
+            $exercises[] = $exercise;
+        }
+
+        return $exercises;
+    }
+}
+class ExerciseProviderFactory {
+    public static function createProvider($type){
+        if($type=="db"){
+            return new DBExerciseProvider;
+        } else {
+            return null;
+        }
+    }
 }
