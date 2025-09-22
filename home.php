@@ -7,6 +7,7 @@ $exerciseProvider = ExerciseProviderFactory::createProvider("db");
 $result = $exerciseProvider->getExercises();
 
 print_r($result,true);
+
 error_log(print_r($result,true));
 
 // if ($result->num_rows > 0) {
